@@ -183,7 +183,13 @@
     font-family: var(--sans); font-size: 14.5px; color: var(--ink); background: var(--card);
   }
   .mech-other-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
-  .consent-row { display: flex; gap: 12px; align-items: flex-start; margin: 28px 0 6px; max-width: 720px; }
+  .elig-block { margin: 28px 0 0; max-width: 720px; }
+  .elig-block .q-elig { font-size: 15.5px; margin: 0 0 10px; }
+  .elig-opts { display: flex; gap: 32px; }
+  .elig-opt { display: flex; gap: 10px; align-items: center; }
+  .elig-opt input { width: 18px; height: 18px; accent-color: var(--accent); flex: none; cursor: pointer; }
+  .elig-opt label { font-size: 15.5px; cursor: pointer; }
+  .consent-row { display: flex; gap: 12px; align-items: flex-start; margin: 20px 0 6px; max-width: 720px; }
   .consent-row input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--accent); flex: none; cursor: pointer; }
   .consent-row label { font-size: 15.5px; cursor: pointer; }
   .nav { display: flex; align-items: center; justify-content: space-between; margin-top: 42px; gap: 16px; }
@@ -233,6 +239,13 @@
       <p>My name is Talia Wilcox, and I am a final year master's candidate at The Fletcher School at Tufts University. I am currently pursuing research on theater nuclear forces and escalation perceptions for my master's capstone project, and I am inviting you to participate in this voluntary survey. In order to understand how policymakers and decision-makers perceive theater forces, I have designed a brief scenario and survey to gather data on what the US thinks is usable when crossing the nuclear threshold.</p>
       <p>This survey should take approximately 15 minutes. Participants are first asked to read a short vignette and answer a set of questions that follow. This survey is <strong>anonymous</strong>, and questions marked with an asterisk (<span class="req">*</span>) are required. The attributes of the strike options in this survey are randomly generated, so the combinations you see are not predictions or assessments of real-world forces. If you have any questions about my project and/or the survey, please feel free to email me: <a href="mailto:Talia.Wilcox@tufts.edu">Talia.Wilcox@tufts.edu</a>.</p>
       <p>If you have questions or concerns about your rights as a research participant, or if you would like to discuss the study with someone outside of the research team, please contact the Tufts Social, Behavioral &amp; Educational Research Institutional Review Board (SBER IRB) at 617-627-8804 or <a href="mailto:sber@tufts.edu">sber@tufts.edu</a>.</p>
+    </div>
+    <div class="elig-block">
+      <p class="q-elig">I confirm that I am a mid-career professional working in the nuclear, defense, or national security field. <span class="req">*</span></p>
+      <div class="elig-opts">
+        <span class="elig-opt"><input type="checkbox" id="eligYes"><label for="eligYes">Yes</label></span>
+        <span class="elig-opt"><input type="checkbox" id="eligNo"><label for="eligNo">No</label></span>
+      </div>
     </div>
     <div class="consent-row">
       <input type="checkbox" id="consentBox">
@@ -483,7 +496,8 @@
   <!-- ================ THANK YOU ================ -->
   <section class="page" id="thanks" data-step="Complete">
     <div class="fin-mark">✓</div>
-    <p class="thanks">Thank you very much for your time and thoughtful consideration of my survey.</p>
+    <p class="thanks" id="thanksMsg">Thank you very much for your time and thoughtful consideration of my survey.</p>
+    <p class="hidden" id="screenReturn" style="margin-top:18px;"><button type="button" class="prevpair" id="screenReturnLink">If you selected "No" in error, click here to return.</button></p>
   </section>
 
   <div class="foot">
@@ -1566,9 +1580,36 @@ m-1330 -60 c9 -12 18 -53 48 -218 7 -42 13 -149 13 -246 1 -94 5 -184 10 -200
     gate();
   });
 
-  /* ---------- consent gate ---------- */
-  el("consentBox").addEventListener("change", (e) => {
-    el("beginBtn").disabled = !e.target.checked;
+  /* ---------- eligibility + consent gate ---------- */
+  let eligible = null;
+  function beginGate() {
+    el("beginBtn").disabled = !(eligible === true && el("consentBox").checked);
+  }
+  function showThanksScreened() {
+    submitting = true;   // freeze autosave + button toggling
+    try { localStorage.setItem(KEY, JSON.stringify({ screened_out: true })); } catch (e) {}
+    el("thanksMsg").textContent = "Thank you for your interest in my survey. Based on your response, you are not eligible to participate in this study.";
+    el("screenReturn").classList.remove("hidden");
+    pageAt(seqPos).classList.remove("active");
+    seqPos = SEQ.length - 1;
+    pageAt(seqPos).classList.add("active");
+    el("steplabel").textContent = pageAt(seqPos).dataset.step;
+    el("progress").style.width = "100%";
+    window.scrollTo({ top: 0 });
+  }
+  el("eligYes").addEventListener("change", (e) => {
+    if (e.target.checked) { el("eligNo").checked = false; eligible = true; }
+    else { eligible = null; }
+    beginGate();
+  });
+  el("eligNo").addEventListener("change", (e) => {
+    if (e.target.checked) { el("eligYes").checked = false; eligible = false; showThanksScreened(); }
+    else { eligible = null; beginGate(); }
+  });
+  el("consentBox").addEventListener("change", beginGate);
+  el("screenReturnLink").addEventListener("click", () => {
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    location.reload();
   });
 
   /* ---------- rating scales + choice buttons ---------- */
@@ -1671,6 +1712,7 @@ m-1330 -60 c9 -12 18 -53 48 -218 7 -42 13 -149 13 -246 1 -94 5 -184 10 -200
   /* ---------- resume a saved session ---------- */
   (function restore() {
     const saved = SAVED_AT_LOAD;
+    if (saved && saved.screened_out) { showThanksScreened(); return; }
     if (!saved || !saved.answers) { sset(); return; }
     const a = saved.answers;
     if (a.scales) { answers.scales = a.scales; Object.keys(a.scales).forEach(paintScale); }
