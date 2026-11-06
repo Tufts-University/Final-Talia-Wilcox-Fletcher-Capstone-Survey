@@ -241,7 +241,7 @@
       <p>If you have questions or concerns about your rights as a research participant, or if you would like to discuss the study with someone outside of the research team, please contact the Tufts Social, Behavioral &amp; Educational Research Institutional Review Board (SBER IRB) at 617-627-8804 or <a href="mailto:sber@tufts.edu">sber@tufts.edu</a>.</p>
     </div>
     <div class="elig-block">
-      <p class="q-elig">I confirm that I am a mid-career professional working in the nuclear, defense, or national security field, that I am based in the United States, and that I am able to read and understand English. <span class="req">*</span></p>
+      <p class="q-elig">I confirm that I am a professional working in the nuclear, defense, or national security field, that I am based in the United States, and that I am able to read and understand English. <span class="req">*</span></p>
       <div class="elig-opts">
         <span class="elig-opt"><input type="checkbox" id="eligYes"><label for="eligYes">Yes</label></span>
         <span class="elig-opt"><input type="checkbox" id="eligNo"><label for="eligNo">No</label></span>
@@ -385,6 +385,28 @@
         <option>It climbs to high altitude within the atmosphere and flies a straight-line path until diving onto its target</option>
       </select>
     </div>
+    <div class="field">
+      <label class="q">Which of the following countries has used nuclear weapons in war against another country? <span class="req">*</span></label>
+      <select id="knowSel2" data-req>
+        <option value="">Select one…</option>
+        <option>China</option>
+        <option>France</option>
+        <option>North Korea</option>
+        <option>Soviet Union</option>
+        <option>United States</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="q">In the study of nuclear weapons, what does the acronym MAD stand for? <span class="req">*</span></label>
+      <select id="knowSel3" data-req>
+        <option value="">Select one…</option>
+        <option>Massed Armed Division</option>
+        <option>Maximum Acceptable Damage</option>
+        <option>Measured Atomic Detonation</option>
+        <option>Minimal Attack Determinant</option>
+        <option>Mutually Assured Destruction</option>
+      </select>
+    </div>
     <div class="nav">
       <button class="btn btn-ghost" data-prev>← Back</button>
       <button class="btn btn-primary" data-next>Continue →</button>
@@ -502,7 +524,7 @@
 
   <div class="foot">
     <span>Master's Capstone · The Fletcher School of Law and Diplomacy, Tufts University</span>
-    <span>Talia.Wilcox@tufts.edu · v23</span>
+    <span>Talia.Wilcox@tufts.edu · v24</span>
   </div>
   <div class="logo-row"><svg version="1.0" xmlns="http://www.w3.org/2000/svg"
   height="74" role="img" aria-label="" viewBox="0 0 2207.000000 3018.000000"
@@ -1395,7 +1417,7 @@ m-1330 -60 c9 -12 18 -53 48 -218 7 -42 13 -149 13 -246 1 -94 5 -184 10 -200
   const answers = {
     scales: {},
     choices: { us: [null, null, null, null, null], ru: [null, null, null, null, null] },
-    manip_answer: null, knowledge_answer: null, open_ends: {}, background: {},
+    manip_answer: null, knowledge_answer: null, knowledge_use_answer: null, knowledge_mad_answer: null, open_ends: {}, background: {},
     mechanisms: [], mechanisms_other: ""
   };
 
@@ -1646,7 +1668,11 @@ m-1330 -60 c9 -12 18 -53 48 -218 7 -42 13 -149 13 -246 1 -94 5 -184 10 -200
   /* ---------- vignette check + knowledge check ---------- */
   el("manipSel").addEventListener("change", (e) => { answers.manip_answer = e.target.value; });
   const KNOW_CORRECT = "It flies at low altitude within the atmosphere on a powered, maneuverable flight path";
+  const KNOW_USE_CORRECT = "United States";
+  const KNOW_MAD_CORRECT = "Mutually Assured Destruction";
   el("knowSel").addEventListener("change", (e) => { answers.knowledge_answer = e.target.value; });
+  el("knowSel2").addEventListener("change", (e) => { answers.knowledge_use_answer = e.target.value; });
+  el("knowSel3").addEventListener("change", (e) => { answers.knowledge_mad_answer = e.target.value; });
 
   /* ---------- open ends + background ---------- */
   document.querySelectorAll("textarea[data-ans]").forEach(t =>
@@ -1687,6 +1713,10 @@ m-1330 -60 c9 -12 18 -53 48 -218 7 -42 13 -149 13 -246 1 -94 5 -184 10 -200
       manip_correct: answers.manip_answer === design.rusStrike.location,
       knowledge_answer: answers.knowledge_answer || "",
       knowledge_correct: answers.knowledge_answer === KNOW_CORRECT,
+      knowledge_use_answer: answers.knowledge_use_answer || "",
+      knowledge_use_correct: answers.knowledge_use_answer === KNOW_USE_CORRECT,
+      knowledge_mad_answer: answers.knowledge_mad_answer || "",
+      knowledge_mad_correct: answers.knowledge_mad_answer === KNOW_MAD_CORRECT,
       escalation_mechanisms: answers.mechanisms,
       escalation_mechanisms_other: (answers.mechanisms_other || "").trim(),
       open_ends: answers.open_ends,
@@ -1722,6 +1752,8 @@ m-1330 -60 c9 -12 18 -53 48 -218 7 -42 13 -149 13 -246 1 -94 5 -184 10 -200
     }
     if (a.manip_answer) { answers.manip_answer = a.manip_answer; el("manipSel").value = a.manip_answer; }
     if (a.knowledge_answer) { answers.knowledge_answer = a.knowledge_answer; el("knowSel").value = a.knowledge_answer; }
+    if (a.knowledge_use_answer) { answers.knowledge_use_answer = a.knowledge_use_answer; el("knowSel2").value = a.knowledge_use_answer; }
+    if (a.knowledge_mad_answer) { answers.knowledge_mad_answer = a.knowledge_mad_answer; el("knowSel3").value = a.knowledge_mad_answer; }
     if (Array.isArray(a.mechanisms)) {
       answers.mechanisms = a.mechanisms;
       answers.mechanisms_other = a.mechanisms_other || "";
